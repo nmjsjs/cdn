@@ -1,4 +1,3 @@
-2222222222
 var zanpian = {
 //浏览器信息
 'browser':{
@@ -1439,4 +1438,858 @@ var zanpian = {
 				zanpian.user.loginform();
 				return false;
 			}
-			zanpian.user.
+			zanpian.user.payment();
+		});
+		//支付VIP影币
+		$('body').on("click", "#user-pay-vip", function() {
+			$(".form-pay-vip").zanpiansub({
+				curobj: $("#pay_vip"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					if ($.hidediv(a), parseInt(a["code"]) > 0) {
+						setTimeout(function() {
+							$(".modal-dialog .close").trigger('click');
+						}, 500);
+						$("#grouptitle").html(a["data"]['user_grouptitle']);
+						$("#viptime").html(a["data"]['user_viptime']);
+						$("#usescore").html(a["data"]['user_score']);
+						zanpian.user.iframe();
+					}
+					if ($.hidediv(a), parseInt(a["code"]) == -2) {
+						setTimeout(function() {
+				            zanpian.user.payment();
+				        }, 500);
+					} else - 3 == parseInt(a["code"])
+				}
+			}).post({
+				url: cms.root + "index.php?s=/user/center/buy"
+			}), !1;
+		});
+		//卡密充值
+		$('body').on("click", "#user-pay-card", function() {
+			$(".form-pay-card").zanpiansub({
+				curobj: $(".form-pay-card"),
+				txt: "充值中,请稍后...",
+				onsucc: function(a){
+					if ($.hidediv(a), parseInt(a["code"]) > 0 || parseInt(a["code"])> 0) {
+						setTimeout(function() {
+							$(".modal-dialog .close").trigger('click');
+						}, 500);
+						$("#usescore").html(parseInt($("#usescore").text()) + parseInt(a["data"]));
+						zanpian.user.iframe();
+					}
+					if ($.hidediv(a), parseInt(a["code"]) == -2 || parseInt(a["code"]) == -2) {
+						zanpian.user.payment();
+					} else - 3 == parseInt(a["code"])
+				}
+			}).post({
+				url: cms.root + "index.php?s=/user/payment/card"
+			}), !1;
+		});
+		//在线充值
+		$('body').on("click", "#user-pay", function(e) {
+			var type=$("select[name='payment'] option:selected").val();
+			var score=$("#score").val();
+			if(type=='weixinpay'){
+              e.preventDefault();
+			  zanpian.cms.modal(cms.root + 'index.php?s=/user/payment/index/payment/'+type+'/score/'+score); 
+			}  
+              payckeck=setInterval(function(){check()},5000);
+              function check(){
+				   if( $(".modal").css("display")=='none' ){clearInterval(payckeck); }
+	               $.get(cms.root + 'index.php?s=/user/payment/check/type/'+type+'/id/'+$("#order_id").text(), function(a){
+		           if ($.hidediv(a), parseInt(a["code"]) > 0 || parseInt(a["code"])> 0) {
+                        clearInterval(payckeck);
+                        $("#success").html('付款成功增加'+parseInt(a["data"])+'积分');
+						$("#usescore").html(parseInt($("#usescore").text()) + parseInt(a["data"]));
+						$.showfloatdiv({txt: '付款成功增加'+parseInt(a["data"])+'积分',cssname : 'succ'});
+						$(".modal-dialog .close").trigger('click');                   
+						zanpian.user.iframe();
+		            }
+	               });
+                }	
+		});			
+	},	
+	//会员充值窗口
+	'payment': function(){
+		if (!zanpian.user.islogin()) {
+				zanpian.user.loginform();
+				return false;
+		}
+		zanpian.cms.modal(cms.root + 'index.php?s=/user/payment/index');
+	},
+	//检查VIP播放页面并刷新页面
+	'iframe': function() {
+		if ($("#yparse-player-vip").length > 0) {
+			if ($(".yparse-player-iframe").length > 0 && $('.yparse-player-iframe').attr('src').indexOf("home-vod-vip-type-play") >= 0) {
+				$('.yparse-player-iframe').attr('src', $('.yparse-player-iframe').attr('src')).show();
+			} else {
+				self.location.reload();
+			}
+		}
+	},
+	//检查登录状态
+	'islogin': function() {
+		islogin = 0;
+		if (document.cookie.indexOf('auth_sign=') >= 0) {
+			islogin = 1;
+			return true;
+		}
+		return false;
+	},
+	//弹出登录窗口
+	'loginform': function() {
+		if (!zanpian.user.islogin()) {
+			zanpian.cms.modal(cms.root + 'index.php?s=/home/ajax/login');
+			zanpian.user.login();
+		} else {
+			return false;
+		}
+	},
+	//登录
+	'login': function() {
+		$('body').on("click", "#login-submit", function(){									
+			if ("" == $("#username").val()){$.showfloatdiv({
+				txt: "请输入用户名手机或邮箱"
+			}), $("#username").focus(), $.hidediv({});
+			    return false;
+			}
+			else {
+				if ("" != $("#password").val()) return $("#login-form").zanpiansub({
+					curobj: $("#login-submit"),
+					txt: "数据提交中,请稍后...",
+					isajax: 1,
+					onsucc: function(a) {
+						if ($.hidediv(a), parseInt(a["code"]) > 0) {
+							zanpian.user.iframe();
+							try {
+								zanpian.playlog.get();
+								zanpian.score.loading();
+							} catch (e) {}
+							setTimeout(function() {
+								$(".modal-dialog .close").trigger('click');
+							}, 500);
+						} else - 3 == parseInt(a["code"])
+						$('img.validate-img').attr("src",zanpian.image.validateurl());
+					}
+				}).post({
+					url: cms.root + "index.php?s=/user/login/index"
+				}), !1;
+				$.showfloatdiv({
+					txt: "请输入密码"
+				}), $("#password").focus(), $.hidediv({})
+			}
+		})
+	},
+	//注册
+	'reg': function() {
+		$('body').on("click", "#reg-submit", function() {	
+			var ac = $('input[name="ac"]').val();	
+			var to = $('input[name="to"]').val();										  
+          	if ("" == $("#reg-form #user_name").val()){$.showfloatdiv({
+		         txt: "请输入用户名"
+	        }), $("#reg-form #user_name").focus(), $.hidediv({});
+			    return false;
+			}
+			if(ac=='mobile'){
+          	    if ("" == to){$.showfloatdiv({
+		            txt: "请输入手机号码"
+	            }), $('input[name="to"]').focus(), $.hidediv({});	
+			       return false;
+			    }				
+                var pattern=/^[1][0-9]{10}$/;
+                var ex = pattern.test(to);			
+			    if (!ex) {$.showfloatdiv({
+				   txt: "手机号格式不正确"
+			    }), $('input[name="to"]').focus(), $.hidediv({});
+			       return false;
+			    }				
+				
+			}else if(ac=='email'){
+          	    if ("" == to){$.showfloatdiv({
+		            txt: "请输入邮箱"
+	            }), $('input[name="to"]').focus(), $.hidediv({});	
+			       return false;
+			    }
+                var pattern = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+                var ex = pattern.test(to);
+			    if (!ex) {$.showfloatdiv({
+				   txt: "邮箱格式不正确"
+			    }), $('input[name="to"]').focus(), $.hidediv({});
+			       return false;
+			    }			
+			}	
+			if ("" != $("#reg-form #user_password").val()) return $("#reg-form").zanpiansub({
+				curobj: $("#reg-submit"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					if ($.hidediv(a), parseInt(a["code"]) > 0) {
+						try {
+							zanpian.playlog.get();
+						} catch (e) {}
+						setTimeout(function() {
+							$(".modal-dialog .close").trigger('click');
+						}, 500);
+					} else - 3 == parseInt(a["code"])
+					$('img.validate-img').attr("src",zanpian.image.validateurl());
+					return false;
+				}
+			}).post({
+				url: cms.root + "index.php?s=/user/reg/index"
+			}), !1;
+			$.showfloatdiv({
+				txt: "请输入密码"
+			}), $("#reg-form #user_password").focus(), $.hidediv({})
+		})
+	},
+	//注册
+	'userinfo': function(){
+		if(!zanpian.user.islogin()){
+			return false;
+		}	
+		$.ajax({
+			type: 'get',
+			cache: false,
+			url: cms.root + 'index.php?s=/user/center/flushinfo',
+			timeout: 10000,
+			success: function(a) {
+				
+				return -7 == parseInt(a.code) ? ($.showfloatdiv({
+					txt: a.msg,
+					classname: "error"
+				}), $.hidediv({
+					code: -1,
+					msg: a.msg
+				}), !1) : (a.uid > 0 && (parseInt(a.history) > 10 ? ($("#playlog-todo").html('<a target="_blank" href="' + cms.root + 'index.php?s=/user/center/playlog">进入会员中心查看' + a.history + '条播放记录&gt;&gt;</a>'), $("#playlog-todo").show()) : ($("#playlog-todo").html(""), $("#playlog-todo").hide()), loginhtml = $("#navbar_user_login,#user_login").html(), $("#navbar_user_login,#user_login").html(a.html), $("#nav-signed").hide(), $(".logoutbt").unbind(), $('#navbar_user_login .nav-link').removeAttr("href"), $('#navbar_user_login').click(function() {
+					$('.user-search,#example-navbar-collapse').hide();
+					$(this).children('#nav-signed').toggle();
+				}), $('#user_login').hover(function() {
+					$(this).children('#nav-signed').stop(true, true).show();
+				}, function() {
+					$(this).children('#nav-signed').stop(true, true).hide();
+				}), $(".logoutbt").click(function(event) {
+					event.stopPropagation();
+					$.showfloatdiv({
+						txt: '数据提交中...',
+						cssname: 'loading'
+					});
+					$.get(cms.root + "index.php?s=/home/ajax/logout", function(r) {
+						if ($.hidediv(r), parseInt(r["code"]) > 0) {
+							$("#navbar_user_login,#user_login").html(loginhtml);
+							zanpian.playlog.get();
+							zanpian.user.iframe();
+							$("#love,#remind").show();
+                            $("#yeslove,#yesremind").hide();
+						}
+					}, 'json');
+				})))
+			}
+		})
+	},
+	'home': function() {
+		$('body').on("click", ".user-home-nav ul a",function(){
+				var url = $(this).attr("data-url");
+				if(url){
+				var txt=$(this).text();
+				$(this).parents().find('li').removeClass('active');
+				$(this).parent('li').addClass('active');
+				$("#tab_title").text(txt);
+				if($(this).attr("data-id")=='cm'){
+				    zanpian.cm.ajax(url);
+					zanpian.cm.emo();
+				}else{
+					zanpian.user.get(url);
+				}}
+		})
+	},
+	//会员中心
+	'center': function() {
+    var countdown=60;
+    function settime(val) {
+        if (countdown == 0) {
+			val.addClass('btn-success').prop('disabled', false);
+            val.val("重新发送认证邮件");
+            countdown = 60;
+            return true;
+        } else {
+			val.removeClass('btn-success').prop('disabled', true);
+			val.val("重新发送(" + countdown + ")");
+            countdown--;
+        }
+        setTimeout(function() {settime(val) },1000)
+        }			
+	    if ($("#cxselect").length > 0) {
+		$.cxSelect.defaults.url = cms.tpl + "tpl/zanpianadmin/libs/jquery-cxselect/js/cityData.json";
+        $.cxSelect.defaults.emptyStyle = 'none';
+        $('#cxselect').cxSelect({
+            selects: ['province', 'city', 'area']
+        });       
+        }
+		//绑定邮箱或手机
+		$('body').on("click", "#submit-bind", function() {
+			var ac = $('input[name="ac"]').val();	
+			var to = $('input[name="to"]').val();														   
+          	if ("" == $('input[name="code"]').val()){$.showfloatdiv({
+		         txt: "请输入验证码"
+	        }), $('input[name="code"]').focus(), $.hidediv({});
+			    return false;
+			}
+			$('form').zanpiansub({
+				curobj: $("#submit-bind"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					if ($.hidediv(a), parseInt(a["code"]) > 0) {
+						setTimeout(function() {
+							$(".modal-dialog .close").trigger('click');
+						}, 500);
+						if(ac=="email"){
+							$("#user_email").val(a["data"]);
+							$(".user_email").val(a["data"]);
+							$("#email").html(a["data"]);
+							$(".user-email-nubind").show();
+							$(".user-email-bind").hide();
+						}
+						if(ac=="mobile"){
+						    $("#user_mobile").val(a["data"]);
+							$(".user_mobile").val(a["data"]);
+							$("#mobile").html(a["data"]);
+							$(".user-mobile-nubind").show();
+							$(".user-mobile-bind").hide();							
+						}						
+					}
+				}
+			}).post({
+				url: cms.root + "index.php?s=/user/center/bind"
+			}), !1;
+		});	
+		$('body').on("click", "#unbind", function() {
+			var url = $(this).data('url');
+			var ac = $(this).data('type');
+			$.showfloatdiv({
+				txt: '数据提交中...',
+				cssname: 'loading'
+			});
+				$.get(url, function(r) {
+					if ($.hidediv(r), parseInt(r["code"]) > 0) {
+						if(ac=="email"){
+							$("#user_email").val('');
+							$(".user_email").val('');
+							$(".user-email-nubind").hide();
+							$(".user-email-bind").show();
+						}
+						if(ac=="mobile"){
+							$("#user_mobile").val('');
+							$(".user_mobile").val('');
+							$(".user-mobile-nubind").show();
+							$(".user-mobile-bind").hide();
+						}
+						}
+				}, 'json');
+		});		
+		//重新发送邮件
+		$('body').on("click", "#send_newemail", function() {
+			var obj=$(this);											 
+			$.showfloatdiv({
+				txt: '邮件发送中...',
+				cssname: 'loading'
+			});
+			$.post(cms.root + "index.php?s=/user/reg/sendemail", {
+				val: 1
+			}, function(a) {
+				settime(obj)
+				$.hidediv(a);
+			}, 'json')
+		});
+		$(".user-notice-close").click(function() {
+			$(this).parent(".user-notice").fadeOut(400, 0, function() {
+				$(this).parent(".user-notice").slideUp(400);
+			});
+			return false;
+		});
+		//删除单条数据
+		$('body').on("click", ".mdel,.del", function() {
+			var parents = $(this).parents('li');
+			$.showfloatdiv({
+				wantclose: 2,
+				succdo: function(r){
+					parents.remove();
+					count=$('#total').text()*1-1;
+					$('#total').text(count);
+				},
+				txt: '确认删除?'
+			});
+		});
+		//删除多条数据
+		$('body').on("click", ".clearall", function() {									
+			var url = $(this).attr("data");
+			$.showfloatdiv({
+				wantclose: 2,
+				ispost: 1,
+				formid: 'clearcomm',
+				url: url,
+				succdo: function(r) {
+					if(r.data>0){
+					    count=$('#total').text()*1-r.data;
+					    $('#total').text(count);
+					}
+					 zanpian.user.get(geturl);
+					 if(typeof(hoturl) !="undefined" ){
+					   zanpian.user.hot(hoturl);
+					 }
+				},
+				txt: '确认删除?'
+			});
+		});
+		zanpian.user.setuplabel();
+		$('body').on("click", ".label-checkbox", function() {
+			zanpian.user.setuplabel();
+		});
+		$('body').on("click", ".delcheckall", function() {
+			checkAll('');
+		});
+		$('body').on('mouseenter', '#list li', function() {
+			$(this).find(".ui-del,.mdel").show();
+			$(this).addClass("hover");
+		});
+		$('body').on('mouseleave', '#list li', function() {
+			$(this).find(".ui-del,.mdel").hide();
+			$(this).removeClass("hover");
+		});
+		$('body').on("click", ".user_nav_get li", function() {
+			var url = $(this).attr('data-url');
+			$(this).siblings().removeClass('active');
+			$(this).addClass('active');
+			zanpian.user.get(url);
+		});
+		//发布留言
+		$('body').on("click", "#user-edit", function(){
+			if (!zanpian.user.islogin()) {
+				zanpian.user.loginform();
+				return false;
+			}
+			var url=$(this).data('url');
+			zanpian.cms.modal(url);
+		});		
+		//修改密码
+		$('body').on("click", "#user-email", function() {
+			if(!zanpian.user.islogin()){
+				zanpian.user.loginform();
+				return false;
+			}										  
+			zanpian.cms.modal(cms.root + 'index.php?s=/user/center/iemail');
+		});	
+		//发送私信
+		$('body').on("click", "#send-msg", function(){
+			if(!zanpian.user.islogin()) {
+				zanpian.user.loginform();
+				return false;
+			}
+			var uid=$(this).attr('data-id');
+			zanpian.cms.modal(cms.root + 'index.php?s=/user/home/msg/id/'+uid);
+		});			
+		$('body').on("click", "#add-modal-submit", function(){
+			var url = $('#modal-form').attr('action');
+			$("#modal-form").zanpiansub({
+				curobj: $("#add-modal-submit"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					if ($.hidediv(a), parseInt(a["code"]) > 0) {
+					    if(typeof(geturl) !="undefined" ){
+					       zanpian.user.get(geturl);
+					    }						
+						setTimeout(function() {
+							$(".modal-dialog .close").trigger('click');
+						}, 500);
+					} else{
+						$('img.validate-img').attr("src",zanpian.image.validateurl());
+					}
+				}
+			}).post({
+				url: url
+			})
+		})
+		$('body').on("click", ".fav-cancel", function(event) {
+			$.showfloatdiv({
+				wantclose: 2,
+				succdo: function(r) {
+					if (parseInt(r.code) == 1) {
+						zanpian.user.get(geturl);
+						zanpian.user.hot(hoturl);
+					}
+				},
+				txt: '确认删除?'
+			});
+		});
+		$('body').on("click", ".fav-add", function(e) {
+			$.showfloatdiv({
+				cssname: 'loading'
+			});
+			var turl = $(this).attr('href');
+			$.get(
+			turl, '', function(data) {
+				$.hidediv(data);
+				if (parseInt(data.code) > 0) {
+					zanpian.user.hot(hoturl);
+					zanpian.user.get(geturl);
+				}
+			}, 'json');
+			return false;
+		});
+		$('body').on('mouseenter', '.i-rss-list', function(){
+			var vid = $(this).find(".play-pic").attr('data');
+			if ($("#play" + vid).attr('data') == '') {
+				$.ajax({
+					url: cms.root + "index.php?s=/user/center/getplayurl/id/" + vid,
+					success: function(r) {
+						$("#play" + vid).html(r);
+						$("#play" + vid).attr('data','1');
+					},
+					dataType: 'json'
+				});
+			}
+			$(this).find(".i-rss-box").show();
+		});
+		$('body').on('mouseleave', '.i-rss-list', function() {
+			$(this).find(".i-rss-box").hide();
+		});
+		//表单提交	
+		$('form').on('submit',function(e){
+			var url = $(this).attr('action');
+			if(!url){
+				url=window.location.href;
+			}
+			$($(this)).zanpiansub({
+				curobj: $("#submit"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					$.hidediv(a);
+				     if (parseInt(a.code) < 0) {
+						 $('img.validate-img').attr("src",zanpian.image.validateurl());
+				     }					
+				}
+			}).post({
+				   url:url
+			})
+		})
+	 $('body').on("click", "#delsns", function(){
+		var type=$(this).attr('data-id');
+		$.showfloatdiv({
+			txt: '数据提交中...',
+			cssname: 'loading'
+		});
+		$.ajax({
+			type: 'get',
+			dataType:'json',
+			cache: false,
+			url: cms.root + "index.php?s=/user/center/sns/type/" +type,
+			timeout: 3000,
+			success: function(r,a) {
+				$.hidediv(r);
+				if (parseInt(r.code) > 0){
+					$('.btn-success').hide();
+					$('.btn-default').show();
+				}
+		}});	
+	 })
+	$('body').on("click", "#addsns", function(){								  
+		var type = $(this).attr('data-id');
+		var snsckeck = setInterval(snslogin,1000);
+		window.open(cms.root + 'index.php?s=/user/snslogin/' + type + "/t/1", "_blank", "width=750, height=525");
+		function snslogin() {
+			if (zanpian.user.islogin()) {
+               	zanpian.user.iframe();
+				zanpian.playlog.get();
+				$(".modal-dialog .close").trigger('click');
+				clearInterval(snsckeck);
+			}else{
+               return false;
+			}
+		}
+	})
+	$('body').on("click", ".loginout", function(){
+			$.showfloatdiv({
+				txt: '正在退出...',
+				cssname: 'loading',
+				isajax: 1,
+				succdo: function(r){}
+			});
+			return false;
+	});	
+	},
+	'get': function(url) {
+		$.ajax({
+			url: url,
+			cache: false,
+			timeout: 3000,
+			success: function(data) {
+				if (data != '') {
+					if ($('#list li').length > 3) $("html,body").animate({
+						scrollTop: $("#list li").offset().top - 130
+					}, 1000);
+					$("#data").empty().html(data);
+				} else {
+					$("#data").html('<div class="kong">当前没有任何数据！</div>');
+				};
+				$(".ajax-page ul a").click(function(e){
+					var pagegourl = $(this).attr('href');
+					zanpian.user.get(pagegourl);
+					return false;
+				});
+
+			},
+			dataType: 'json'
+		});
+		return false;
+	},	
+	'hot': function(url) {
+		$.ajax({
+			url: url,
+			cache: false,
+			timeout: 3000,
+			success: function(data) {
+				if (data.ajaxtxt != '') {
+					$("#hotremind").empty().html(data);
+				} else {
+					$("#hotremind").html('<li class="kong">当前没有任何数据！</li>');
+				};
+				$("#pages").html(data.pages);
+			},
+			dataType: 'json'
+		});
+		return false;
+	},
+	'setuplabel': function() {
+		if ($('.label-checkbox input').length) {
+			$('.label-checkbox').each(function() {
+				$(this).removeClass('label-checkbox-on');
+			});
+
+			$('.label-checkbox input:checked').each(function() {
+				$(this).parent('label').addClass('label-checkbox-on');
+			});
+
+		};
+		if ($('.label-radio input').length) {
+			$('.label-radio').each(function() {
+				$(this).removeClass('label-radio-on');
+			});
+			$('.label-radio input:checked').each(function() {
+				$(this).parent('label').addClass('label-radio-on');
+			});
+		};
+	},
+	'editor': function () {	
+
+	}
+	
+},
+'gbook': { 
+    //留言
+	'load': function() {
+		$('body').on("click", "#gb_types li",function(e){
+        $("#gb_types li").each(function(){
+            $(this).removeClass('active');
+        });
+        $(this).addClass('active');
+        $("#gb_type").val($(this).attr('val'));
+        });		
+		$('body').on("click", "#gb-submit", function(){
+			if ($("#gb_nickname").val() == '') $.showfloatdiv({
+				txt: "请输入您的昵称"
+			}), $("#gb_nickname").focus(), $.hidediv({});
+			else {										 
+			if ("" != $("#gb_content").val()) return $("#gbook-form").zanpiansub({
+				curobj: $("#gb-submit"),
+				txt: "数据提交中,请稍后...",
+				onsucc: function(a) {
+					if ($.hidediv(a), parseInt(a["code"]) > 0) {
+					  zanpian.list.url(cms.root + "index.php?s=/home/gb/show");
+					} else - 3 == parseInt(a["code"])
+				}
+			}).post({
+				url: cms.root + "index.php?s=/home/gb/add"
+			}), !1;
+			$.showfloatdiv({
+				txt: "输入留言内容"
+			}), $("#gb_content").focus(), $.hidediv({})
+		}
+		})		
+	},
+},
+'search': { //搜索
+	'autocomplete': function(){
+		var $limit = $('.zanpian_search').eq(0).attr('data-limit');
+		if( $limit > 0){
+			$.ajaxSetup({
+				cache: true
+			});
+			$.getScript(cms.public + cms.theme.name + "/js/jquery.autocomplete.min.js", function(response, status) {
+				$ajax_url = cms.root+'index.php?s=/home/search/vod';
+				$('.zanpian_wd').autocomplete({
+					serviceUrl : $ajax_url,
+					params: {'limit': $limit},
+					paramName: 'q',
+					maxHeight: 400,
+					transformResult: function(response) {
+						var obj = $.parseJSON(response);
+						return {
+							suggestions: $.map(obj.data, function(dataItem) {
+								return { value: dataItem.vod_name, data: dataItem.vod_url};
+							})
+						};
+					},
+					onSelect: function (suggestion) {
+						location.href = suggestion.data;
+						//alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+					}
+				});
+			});
+		}
+	},
+},
+//图片处理
+'image': {
+	//幻灯与滑块
+	'swiper': function(){	
+	    $.ajaxSetup({
+			cache: true
+		});
+		$.getScript(cms.public + cms.theme.name + "/js/swiper.min.js", function(){	
+var swiper=new Swiper('.box-slide',{pagination:'.swiper-pagination',lazyLoading:true,preventClicks:true,paginationClickable:true,autoplayDisableOnInteraction:false,autoplay:3000,loop:true,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',});var swiper=new Swiper('.details-slide',{pagination:'.swiper-pagination',autoHeight:true,loop:true,nextButton:'.details-slide-next',prevButton:'.details-slide-pre',paginationType:'fraction',keyboardControl:true,lazyLoading:true,lazyLoadingInPrevNext:true,lazyLoadingInPrevNextAmount:1,lazyLoadingOnTransitionStart:true,});var swiper=new Swiper('.news-switch-3',{lazyLoading:true,slidesPerView:3,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:3,spaceBetween:0},992:{slidesPerView:2,spaceBetween:0},767:{slidesPerView:1,spaceBetween:0}}});var swiper=new Swiper('.news-switch-4',{lazyLoading:true,slidesPerView:4,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:4,spaceBetween:0},992:{slidesPerView:3,spaceBetween:0},767:{slidesPerView:2,spaceBetween:0}}});var swiper=new Swiper('.news-switch-5',{lazyLoading:true,slidesPerView:5,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:4,spaceBetween:0},992:{slidesPerView:3,spaceBetween:0},767:{slidesPerView:2,spaceBetween:0}}});var swiper=new Swiper('.vod-swiper-4',{lazyLoading:true,slidesPerView:4,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:4,spaceBetween:0},767:{slidesPerView:3,spaceBetween:0}}});var swiper=new Swiper('.vod-swiper-5',{lazyLoading:true,slidesPerView:5,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:4,spaceBetween:0},767:{slidesPerView:3,spaceBetween:0}}});var swiper=new Swiper('.vod-swiper-6',{lazyLoading:true,slidesPerView:6,spaceBetween:0,nextButton:'.swiper-button-next',prevButton:'.swiper-button-prev',breakpoints:{1200:{slidesPerView:5,spaceBetween:0},992:{slidesPerView:4,spaceBetween:0},768:{slidesPerView:3,spaceBetween:0}}});		
+	});
+	},
+	//延迟加载
+	'lazyload': function(){
+		$.ajaxSetup({
+			cache: true
+		});
+		$.getScript(cms.public + cms.theme.name + "/js/jquery.lazyload.min.js", function(response,status){
+			$(".loading").lazyload({
+				effect : "fadeIn",
+				failurelimit: 15
+			}); 
+		});
+	},	
+	//生成二维码
+	'qrcode': function(){
+		murl=cms.murl;		
+		if(murl=='' || murl === 'undefined'){
+			murl=zanpian.browser.url;
+		}
+	    if($(".qrcode")){
+		//$(".qrcode").append('<img class="qrcode" src="//api.97bike.com/qrcode/?url='+encodeURIComponent(murl)+'"/>');
+		$(".qrcode").append('<img class="qrcode" src="//share.zzwzm.com/qrcode/?url='+encodeURIComponent(murl)+'"/>');
+		}
+		$("#qrcode").popover({
+				html: true
+		});
+		$("#qrcode").on('show.bs.popover', function () {
+			//$("#qrcode").attr('data-content','<img class="qrcode" src="//api.97bike.com/qrcode/?url='+encodeURIComponent(murl)+'"/>');
+			$("#qrcode").attr('data-content','<img class="qrcode" src="//share.zzwzm.com/qrcode/?url='+encodeURIComponent(murl)+'"/>');
+		})
+	},
+	//生成验证码图片
+	'validate':function(){
+		return '<label><img class="validate-img" src="'+cms.root +'index.php?s=/home/verify/index/' + Math.random()+'"></label>';
+	},
+	//生成验证码图片
+	'validateurl':function(){
+		return cms.root +'index.php?s=/home/verify/index/' + Math.random();
+	},	
+},
+//验证码相关
+'validate': {
+	'load': function(){
+		zanpian.validate.focus();
+		zanpian.validate.click();
+	},
+	'focus': function(){//验证码框焦点
+		$('body').on("focus", "#zanpian-validate", function(){
+			$('#validate-zanpian,#validate-zanpian-reg').html(zanpian.image.validate()); 												
+			$(this).unbind();
+		});
+	},
+	'click': function(){//点击刷新
+		$('body').on('click', 'img.validate-img', function(){
+			$(this).attr("src",zanpian.image.validateurl());
+		});
+	}
+},
+'language':{//简繁转换
+	's2t':function(){
+		if(zanpian.browser.language=='zh-hk' || zanpian.browser.language=='zh-tw'){
+			$.getScript(cms.public + cms.theme.name + "/js/s2t.min.js", function(data, status, jqxhr) {
+				$(document.body).s2t();//$.s2t(data);
+			});
+		}
+	},
+	't2s':function(){
+		if(zanpian.browser.language=='zh-cn'){
+			$.getScript(cms.public + cms.theme.name + "/js/s2t.min.js", function(data, status, jqxhr) {
+				$(document.body).t2s();//$.s2t(data);
+			});
+		}
+	}
+},
+//人气处理
+'hits':{
+	'load': function(){
+		$(".detail-hits").each(function(i){
+			var $this = $(".detail-hits").eq(i);
+			$.ajax({
+				url: cms.root+'index.php?s=/home/hits/show/id/'+$this.attr("data-id")+'/sid/'+$this.attr("data-sid")+'/type/'+$this.attr("data-type"),
+				cache: true,
+				dataType: 'json',
+				success: function(data){
+					$type = $this.attr('data-type');
+					if($type != 'insert'){
+						$this.html(eval('(data.' + $type + ')'));
+					}
+					$("#detail-hits").html(eval('(data.' + $("#detail-hits").attr('data-type') + ')'));
+				}
+			});
+	 });
+	}
+},
+'mobile':{//移动端专用
+	'jump': function(){
+		if( cms.murl && (zanpian.browser.url != cms.murl) ){
+			 location.replace(cms.murl);
+		}
+	},
+},	
+};
+$(document).ready(function(){
+if(zanpian.browser.useragent.mobile){
+	zanpian.mobile.jump();
+}else{
+    zanpian.barrage.index();	
+}						   
+zanpian.image.swiper();//幻灯片
+zanpian.cms.slider.index();//幻灯片_1
+zanpian.cms.slider.nav('#nav-select');//滑动导航
+zanpian.cms.head();//头部导航
+zanpian.cms.theme();//主题切换				   
+zanpian.cms.floatdiv();//窗口提示信息	
+zanpian.cms.all();//主要加载
+zanpian.cms.tab();//切换
+zanpian.cms.collapse();
+zanpian.cms.scrolltop();
+zanpian.image.lazyload();//图片延迟加载
+zanpian.search.autocomplete();//联系搜索
+zanpian.image.qrcode();//二维码
+zanpian.list.ajax();//列表AJAX
+zanpian.detail.collapse();
+zanpian.detail.playlist();//更多剧集
+zanpian.detail.download();
+zanpian.user.index();
+zanpian.gbook.load();
+zanpian.validate.load();
+zanpian.playlog.load();//加载播放记录
+zanpian.updown.load();
+zanpian.score.load();//加载评分
+zanpian.cm.load();//加载评论
+zanpian.love.load();//订阅收藏
+zanpian.hits.load();
+//zanpian.language.s2t();//简体转繁体默认关闭需要开启去掉前面的//
+});
