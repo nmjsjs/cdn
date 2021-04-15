@@ -51,7 +51,7 @@ var zanpian = {
 		}
 		$('body').on("click", "#theme-skin li", function(e) {
 			var theme = $(this).data('theme');
-			var href = cms.public + cms.theme.name + "/css/theme-" + theme + ".css?v=" + Math.random();
+			var href = cms.public + cms.theme.name + "/css/theme-" + theme + cms.public.min +".css?v=" + Math.random();
 			$('#skin').attr('href', href);
 			localStorage.setItem('theme', theme);
 		})
